@@ -176,7 +176,11 @@ func (s *Strategy) New() types.Object {
 }
 
 func (s *Strategy) Get(ctx context.Context, namespace, name string) (types.Object, error) {
-	ctx, span := kotel.StartSpanIfParent(ctx, tracer, "dbStrategyGet", trace.WithAttributes(attribute.String("gvk", s.db.gvk.String()), attribute.String("namespace", namespace)))
+	attrs := []attribute.KeyValue{attribute.String("gvk", s.db.gvk.String())}
+	if namespace != "" {
+		attrs = append(attrs, attribute.String("namespace", namespace))
+	}
+	ctx, span := kotel.StartSpanIfParent(ctx, tracer, "dbStrategyGet", trace.WithAttributes(attrs...))
 	defer span.End()
 
 	rec, err := s.db.get(ctx, namespace, name)
